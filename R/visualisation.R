@@ -44,7 +44,8 @@ g_center_cumdur <- ggplot(df, aes(x = center_cumulative_duration_sec,
 g_center_cumdur_hist <- ggplot(df, aes(x = center_cumulative_duration_sec,
                                   color = treatment,
                                   fill = treatment)) +
-  geom_histogram(alpha = 0.4) + scale_color_jcolors(palette = "pal3") +
+  geom_histogram(alpha = 0.4, binwidth = 1, position = "dodge") +
+  scale_color_jcolors(palette = "pal3") +
   scale_fill_jcolors(palette = "pal3")
 
 g_center_cumdur_hist
@@ -57,5 +58,6 @@ center_cumdur_FG7142 <- df %>% dplyr::filter(treatment == "FG7142") %>%
 
 ks.test(center_cumdur_vehicle, center_cumdur_FG7142, alternative = "less")
 
-
-
+m_tweedie <- glmmTMB(center_cumulative_duration_sec ~ treatment + (1|id),
+                     data = df,family=tweedie())
+summary(m_tweedie)

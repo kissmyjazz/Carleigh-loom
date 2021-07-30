@@ -9,7 +9,7 @@ library(glmmTMB)
 theme_set(theme_apa(base_size = 14) + theme(legend.position = "bottom"))
 
 path <- here("raw_data", "loom_data.csv")
-df <- read_csv(path, col_types = "fffiniiinnnnn", )
+df <- read_csv(path, col_types = "fffiniiinnnnn")
 
 
 g_distribution <- JointAI::plot_all(as.data.frame(df[, 4:12]),

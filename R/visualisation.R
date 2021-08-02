@@ -5,11 +5,14 @@ library(JointAI)
 library(jcolors)
 library(papaja)
 library(glmmTMB)
+library(performance)
 
 theme_set(theme_apa(base_size = 14) + theme(legend.position = "bottom"))
 
 path <- here("raw_data", "loom_data.csv")
-df <- read_csv(path, col_types = "fffiniiinnnnn")
+df <- read_csv(path, col_types = "fffiniiinnnnn") %>%
+  dplyr::mutate(center_cumulative_duration_sec_pos =
+                  (center_cumulative_duration_sec + 0.01))
 
 
 g_distribution <- JointAI::plot_all(as.data.frame(df[, 4:12]),
@@ -27,7 +30,7 @@ df_tall <- df %>% tidyr::pivot_longer(!id:treatment, names_to = "variable",
 g_violin <- ggplot(df_tall, aes(x = treatment, y = value, color = treatment,
                                 fill = treatment)) +
   geom_violin(trim = FALSE, alpha = 0.4) +
-  geom_jitter(shape=16, position=position_jitter(0.1), color = "black") +
+  geom_jitter(shape = 16, position = position_jitter(0.1), color = "black") +
   stat_summary(fun = median, geom = "point", size = 2.5, color = "red") +
   facet_wrap(vars(variable), scales = "free_y") +
   scale_color_jcolors(palette = "pal3") +
@@ -59,5 +62,21 @@ center_cumdur_FG7142 <- df %>% dplyr::filter(treatment == "FG7142") %>%
 ks.test(center_cumdur_vehicle, center_cumdur_FG7142, alternative = "less")
 
 m_tweedie <- glmmTMB(center_cumulative_duration_sec ~ treatment + (1|id),
-                     data = df,family=tweedie())
+                     data = df, family = tweedie())
 summary(m_tweedie)
+
+m_gaussian <- glmmTMB(center_cumulative_duration_sec ~ treatment + (1|id),
+                   data = df, family = gaussian)
+summary(m_gaussian)
+
+m_ziGamma <- glmmTMB(center_cumulative_duration_sec_pos ~ treatment + (1|id),
+                      data = df, family = ziGamma(link = "log"))
+summary(m_ziGamma)
+
+m_ziGamma_noRefx <- glmmTMB(center_cumulative_duration_sec_pos ~ treatment,
+                     data = df, family = ziGamma(link = "log"))
+summary(m_ziGamma_noRefx)
+
+compare_performance(m_tweedie, m_gaussian, m_Gamma, m_ziGamma_noRefx)
+
+check_model(m_Gamma)

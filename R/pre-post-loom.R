@@ -1,11 +1,5 @@
 library(tidyverse)
 library(here)
-library(rjags)
-library(JointAI)
-library(jcolors)
-library(papaja)
-library(glmmTMB)
-library(performance)
 library(readxl)
 
 path <- here("raw_data", "looming.xlsx")
